@@ -26,11 +26,24 @@ export function encryptedStore(raw: BlobStore, key: Buffer, origin: string) {
   }
   return {
     async read<T>(name: string): Promise<{ value: T; etag?: string } | null> {
-      const entry = await raw.getWithMetadata(prefix + name, {
+      const blobKey = prefix + name;
+      const options = {
         type: "text",
         consistency: "strong",
-      });
+      } as const;
+      let entry = await raw.getWithMetadata(blobKey, options);
       if (!entry) return null;
+      let etag = entry.etag;
+      if (!etag && name.startsWith("session/")) {
+        // Netlify Dev includes ETags in listings and writes, but omits them on GET.
+        const { blobs } = await raw.list({ prefix: blobKey });
+        etag = blobs.find((blob) => blob.key === blobKey)?.etag;
+        if (!etag) return null;
+        // Read after the listing so an update between requests fails the write's ETag check.
+        entry = await raw.getWithMetadata(blobKey, options);
+        if (!entry) return null;
+        etag = entry.etag ?? etag;
+      }
       const bytes = Buffer.from(entry.data, "base64");
       const decipher = createDecipheriv(
         "aes-256-gcm",
@@ -46,7 +59,7 @@ export function encryptedStore(raw: BlobStore, key: Buffer, origin: string) {
             decipher.final(),
           ]).toString("utf8"),
         ) as T,
-        etag: entry.etag,
+        etag,
       };
     },
     async write(
