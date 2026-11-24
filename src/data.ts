@@ -6,11 +6,6 @@ export const GOALS: Goal[] = ['First half marathon', 'Faster half marathon', 'Bu
 export const EXPERIENCES = ['Beginner', 'Intermediate', 'Advanced', 'Returning'] as const;
 export const WORKOUTS: Workout[] = ['Running', 'Walking', 'Cycling', 'Swimming', 'Strength', 'Mobility / yoga'];
 export const EQUIPMENT = ['Yoga mat', 'Resistance bands', 'Weights', 'Skipping rope', 'Gym'];
-export const MODELS = [
-  { id: 'openai/gpt-6-luna', name: 'GPT-6 Luna', provider: 'OpenAI', detail: 'Efficient · demo option' },
-  { id: 'openai/gpt-6.2-sol', name: 'GPT-6.2 Sol', provider: 'OpenAI', detail: 'Balanced · demo option' },
-  { id: 'anthropic/claude-sonnet', name: 'Claude Sonnet', provider: 'Anthropic', detail: 'Illustrative model option' },
-];
 export const DEFAULT_PROFILE: RunnerProfile = {
   goal: 'First half marathon', customGoal: '', experience: 'Intermediate', breakDuration: '',
   availability: { Mon: 40, Wed: 45, Fri: 40, Sun: 75 },
@@ -20,7 +15,8 @@ export const DEFAULT_PROFILE: RunnerProfile = {
   race: { name: 'My December half marathon', distance: 21.1, date: '', location: 'Kanteerava Stadium, Bengaluru', target: '' },
 };
 
-export function paceLabel(seconds: number) {
+export function paceLabel(seconds?: number) {
+  if (seconds === undefined || !Number.isFinite(seconds)) return '—';
   const total = Math.round(seconds);
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 }

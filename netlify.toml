@@ -5,10 +5,21 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[dev]
+  command = "npm run dev:ui"
+  targetPort = 5173
+  port = 8888
+  autoLaunch = false
+
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/strava/*"
+  to = "/.netlify/functions/strava/:splat"
   status = 200
+  force = true
 
 [[headers]]
   for = "/*"

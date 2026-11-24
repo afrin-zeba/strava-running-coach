@@ -22,6 +22,13 @@ export function validateProfile(value: unknown): string | null {
 }
 
 export const profileStorage = {
+  forAthlete(athleteId: string, current: RunnerProfile): { profile: RunnerProfile; warning?: string } {
+    const key = `strava-${athleteId}`;
+    try {
+      if (localStorage.getItem(PROFILE_PREFIX + key) === null) profileStorage.save(key, current);
+      return profileStorage.load(key);
+    } catch { return { profile: current, warning: 'Could not save your athlete context. Keep this tab open.' }; }
+  },
   load(accountId: string): { profile: RunnerProfile; warning?: string } {
     let value: string | null;
     try { value = localStorage.getItem(PROFILE_PREFIX + accountId); }
@@ -50,7 +57,7 @@ export function saveSetting(key: string, value: string) {
   try { localStorage.setItem(`milemark.${key}`, value); return true; } catch { return false; }
 }
 
-// shortcut: fixtures only; replace this source with authorized Strava access when live integration is approved.
+// Explicit demo source. Live activities use the local Strava REST endpoints.
 export function createActivitySource(now = () => Date.now()) {
   const cache = new Map<string, { value?: Activity[]; expiresAt: number; pending?: Promise<Activity[]> }>();
   return {

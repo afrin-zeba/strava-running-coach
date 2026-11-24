@@ -121,3 +121,15 @@ describe('illustrative schedule constraints', () => {
     expect(() => validatePreview(p, result.days)).toThrow('available time');
   });
 });
+
+describe('personal athlete context migration', () => {
+  it('copies existing context once, preserves demo data and never overwrites athlete context', () => {
+    const original = freshProfile(); original.diet = 'My saved meals';
+    profileStorage.save('runner-one', original);
+    expect(profileStorage.forAthlete('7', original).profile.diet).toBe('My saved meals');
+    const changed = freshProfile(); changed.diet = 'New athlete meals'; profileStorage.save('strava-7', changed);
+    expect(profileStorage.forAthlete('7', original).profile.diet).toBe('New athlete meals');
+    expect(profileStorage.load('runner-one').profile.diet).toBe('My saved meals');
+    expect(profileStorage.load('strava-8').profile.diet).not.toBe('New athlete meals');
+  });
+});
